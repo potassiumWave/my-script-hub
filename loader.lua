@@ -1,5 +1,5 @@
 -- ==============================================================================
--- AQUA_HUB (COMBAT + MOVEMENT + VISUALS + TOGGLEABLE WEAPON SKIN SYSTEM)
+-- AQUA_HUB 쏘스 뜯지마라 쌉쌉꾸야
 -- ==============================================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -14,7 +14,7 @@ local oldUI = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("AQUA_Ultimat
 if oldUI then oldUI:Destroy() end
 
 -- ==========================================
--- 1. 기능 상태 변수 및 스킨 체인저 마스터 스위치
+-- 1. 
 -- ==========================================
 local combatDesyncActive = false
 local aimAssistEnabled = false
@@ -30,10 +30,10 @@ local skeletonEnabled = false
 local FOVRadius = 300
 local Smoothness = 3
 
--- ★ 스킨 체인저 켜기/끄기 상태 변수 (기본값: 켜짐 또는 꺼짐 선택 가능)
+--  스킨 체인저 켜기/끄기 상태 변수 (기본값: 켜짐 또는 꺼짐 선택 가능)
 local skinChangerEnabled = true
 
--- 사용자 제공 Weapon/Cosmetic 시스템 코어 변수 및 함수 초기화
+-- 오픈소스넣기
 local playerScripts = LocalPlayer.PlayerScripts
 local controllers = playerScripts.Controllers
 
@@ -593,7 +593,7 @@ do
 end
 
 -- ==========================================
--- 3. UI 시스템
+-- 3. 뭬야이 싸구려같으면서도 비싼언넴ui같은ui는
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AQUA_UltimateUI"
@@ -627,7 +627,7 @@ MenuBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- 드래그 기능
+-- 드래그 기능넣었다 ㅇㅇ형아여 ㅋㅋ
 local dragging, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -660,7 +660,7 @@ TitleBar.TextXAlignment = Enum.TextXAlignment.Left
 TitleBar.ZIndex = 51
 
 -- ==========================================
--- 4. 탭 전환 시스템 (Main / Info)
+-- 4. 탭 전환  (Main / Info)
 -- ==========================================
 local TabBarContainer = Instance.new("Frame", MainFrame)
 TabBarContainer.BackgroundTransparency = 1
@@ -793,7 +793,7 @@ addToggle(combatCol, "Aimbot (우클릭 보정)", false, function(v)
     aimAssistEnabled = v
 end)
 
--- ★ Visuals 탭에 스킨 체인저 켜기/끄기 토글 추가
+--  Visuals 탭에 스킨 체인저 켜기/끄기 토글 추가
 addToggle(visualsCol, "Skin Changer (스킨체인저)", true, function(v)
     skinChangerEnabled = v
 end)
@@ -883,7 +883,7 @@ infoLabel.TextYAlignment = Enum.TextYAlignment.Top
 infoLabel.ZIndex = 53
 
 -- ==========================================
--- 7. 메인 렌더링 및 철저한 ESP 정리 루프
+-- 7. 뭐만들었지 ESP였나 그럴거
 -- ==========================================
 local ActiveDrawings = {
     Names = {},
