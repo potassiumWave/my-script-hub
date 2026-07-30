@@ -1,5 +1,5 @@
 -- ==============================================================================
--- AQUA_HUB 코드 뜯지마라 쌉쌉꾸야
+-- AQUA_HUB (STABLE FIX + ANTI-CRASH + RIVLOX BYPASS + SKIN + SKELETON)
 -- ==============================================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -10,7 +10,7 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 -- ==========================================
--- 0. anticheat bypass module
+-- 0. bypass moudle
 -- ==========================================
 pcall(function()
     if getrawmetatable then
@@ -58,8 +58,6 @@ end)
 -- ==========================================
 local combatDesyncActive = false
 local aimAssistEnabled = false
-local triggerBotEnabled = false -- 트리거봇 변수 추가
-local teamCheckEnabled = true   -- 팀 체크 변수 추가
 local movementDesyncEnabled = false
 local speedEnabled = false
 local speedMultiplier = 1.05
@@ -87,6 +85,8 @@ pcall(function()
 end)
 
 local equipped, favorites = {}, {}
+local constructingWeapon, viewingProfile = nil, nil
+local lastUsedWeapon = nil
 
 local function cloneCosmetic(name, cosmeticType, options)
     if not CosmeticLibrary or not CosmeticLibrary.Cosmetics then return nil end
@@ -199,16 +199,6 @@ end)
 
 loadConfig()
 
--- 팀 체크 함수
-local function isEnemy(player)
-    if player == LocalPlayer then return false end
-    if not teamCheckEnabled then return true end
-    if player.Team and LocalPlayer.Team then
-        return player.Team ~= LocalPlayer.Team
-    end
-    return true
-end
-
 -- ==========================================
 -- 2. 디싱크 및 사일런트 (안전 장치 포함)
 -- ==========================================
@@ -312,7 +302,7 @@ do
         local MAX_DISTANCE = 200
 
         for _, player in ipairs(Players:GetPlayers()) do
-            if not isEnemy(player) then continue end
+            if player == LocalPlayer then continue end
             local char = player.Character
             if not char then continue end
 
@@ -455,7 +445,7 @@ TitleBar.BackgroundTransparency = 1
 TitleBar.Position = UDim2.new(0, 15, 0, 0)
 TitleBar.Size = UDim2.new(1, -30, 0, 35)
 TitleBar.Font = Enum.Font.Code
-TitleBar.Text = "Aqua Hub - Triggerbot Added Build"
+TitleBar.Text = "Aqua Hub - Anti-Crash Stable Build"
 TitleBar.TextColor3 = Color3.fromRGB(180, 185, 195)
 TitleBar.TextSize = 13
 TitleBar.TextXAlignment = Enum.TextXAlignment.Left
@@ -584,10 +574,6 @@ local function addToggle(parent, name, defaultState, callback)
     end)
 end
 
-addToggle(combatCol, "팀 체크 (아팀 보호)", true, function(v)
-    teamCheckEnabled = v
-end)
-
 addToggle(combatCol, "고성능 디싱크/사일런트", false, function(v)
     combatDesyncActive = v
     if __p6q7r8.__s9t0u1 then
@@ -597,10 +583,6 @@ end)
 
 addToggle(combatCol, "Aimbot (우클릭 보정)", false, function(v)
     aimAssistEnabled = v
-end)
-
-addToggle(combatCol, "Triggerbot (트리거봇)", false, function(v)
-    triggerBotEnabled = v
 end)
 
 addToggle(visualsCol, "Skin Changer (스킨체인저)", true, function(v)
@@ -646,12 +628,12 @@ infoLabel.Font = Enum.Font.Code
 infoLabel.Text = [[
 [ AQUA HUB - INFORMATION ]
 
-• Status: Anti-Crash & Triggerbot Added
-• Version: v2.9.0 (Null-Safe Execution)
+• Status: Anti-Crash & Stable Protection
+• Version: v2.8.2 (Null-Safe Execution)
 • Developer: User & AI Collaborator
 
 Notice:
-- Triggerbot automatically fires when your crosshair is on an enemy.
+- All core functions are wrapped in pcall to prevent crashes.
 ]]
 infoLabel.TextColor3 = Color3.fromRGB(170, 175, 185)
 infoLabel.TextSize = 12
@@ -660,7 +642,7 @@ infoLabel.TextYAlignment = Enum.TextYAlignment.Top
 infoLabel.ZIndex = 53
 
 -- ==========================================
--- 7. 메인 루프 (트리거봇 및 기타 기능 포함)
+-- 7. 메인 루프 (안전성 검사 포함 크래시 방지)
 -- ==========================================
 local ActiveDrawings = {
     Names = {},
@@ -674,7 +656,7 @@ local function GetClosestPlayerToCursor()
     local mousePos = UserInputService:GetMouseLocation()
 
     for _, player in ipairs(Players:GetPlayers()) do
-        if isEnemy(player) and player.Character then
+        if player ~= LocalPlayer and player.Character then
             local humanoid = player.Character:FindFirstChild("Humanoid")
             local targetPartObj = player.Character:FindFirstChild("Head")
 
@@ -736,19 +718,6 @@ RunService.RenderStepped:Connect(function(dt)
             end
         end
 
-        -- 트리거봇 로직 (마우스 크로스헤어 타겟팅)
-        if triggerBotEnabled then
-            local mouseTarget = LocalPlayer:GetMouse().Target
-            if mouseTarget and mouseTarget.Parent then
-                local targetPlayer = Players:GetPlayerFromCharacter(mouseTarget.Parent)
-                if targetPlayer and isEnemy(targetPlayer) then
-                    pcall(function()
-                        mouse1click()
-                    end)
-                end
-            end
-        end
-
         local currentPlayers = {}
         for _, p in ipairs(Players:GetPlayers()) do
             currentPlayers[p] = true
@@ -761,7 +730,7 @@ RunService.RenderStepped:Connect(function(dt)
             end
         end
 
-        for player, box in pairs(ActiveDrawings.Boxes) do
+        for player, box in pairs(ActiveDrawing.Boxes or ActiveDrawings.Boxes) do
             if not currentPlayers[player] or not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
                 pcall(function() box.Visible = false box:Remove() end)
                 ActiveDrawings.Boxes[player] = nil
@@ -920,7 +889,7 @@ RunService.RenderStepped:Connect(function(dt)
                                 if torsoOn and rLegOn then
                                     skel.TorsoToRightLeg.From = Vector2.new(torsoPos.X, torsoPos.Y)
                                     skel.TorsoToRightLeg.To = Vector2.new(rLegPos.X, rLegPos.Y)
-                                    skel.TorsoToRightLeg.Visible = true
+                                    skel.TorsoToRightLen.Visible = true
                                 else
                                     skel.TorsoToRightLeg.Visible = false
                                 end
@@ -945,4 +914,4 @@ RunService.RenderStepped:Connect(function(dt)
             end
         end
     end)
-end)
+end
