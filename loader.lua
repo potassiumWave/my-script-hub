@@ -574,24 +574,24 @@ local function addToggle(parent, name, defaultState, callback)
     end)
 end
 
-addToggle(combatCol, "고성능 디싱크/사일런트", false, function(v)
+addToggle(combatCol, "slientDesync", false, function(v)
     combatDesyncActive = v
     if __p6q7r8.__s9t0u1 then
         __p6q7r8.__s9t0u1.__active = v
     end
 end)
 
-addToggle(combatCol, "Aimbot (우클릭 보정)", false, function(v)
+addToggle(combatCol, "Aimbot (Right hold)", false, function(v)
     aimAssistEnabled = v
 end)
 
-addToggle(visualsCol, "Skin Changer (스킨체인저)", true, function(v)
+addToggle(visualsCol, "Skin Changer", true, function(v)
     skinChangerEnabled = v
 end)
 
 addToggle(movementCol, "Custom Speed", false, function(v) speedEnabled = v end)
 addToggle(movementCol, "Noclip", false, function(v) noclipEnabled = v end)
-addToggle(movementCol, "Fly (비행)", false, function(v) flying = v end)
+addToggle(movementCol, "Fly", false, function(v) flying = v end)
 
 local flySpeedBtn = Instance.new("TextButton", movementCol)
 flySpeedBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
@@ -614,9 +614,9 @@ flySpeedBtn.MouseButton1Click:Connect(function()
     flySpeedBtn.Text = " Fly Speed: " .. flySpeed
 end)
 
-addToggle(visualsCol, "ESP (이름 표시)", false, function(v) espEnabled = v end)
-addToggle(visualsCol, "Box ESP (박스)", false, function(v) boxEspEnabled = v end)
-addToggle(visualsCol, "Skeleton ESP (뼈대)", false, function(v) skeletonEnabled = v end)
+addToggle(visualsCol, "ESP (Name)", false, function(v) espEnabled = v end)
+addToggle(visualsCol, "Box ESP (Box)", false, function(v) boxEspEnabled = v end)
+addToggle(visualsCol, "Skeleton ESP (skeleton)", false, function(v) skeletonEnabled = v end)
 
 -- ==========================================
 -- 6. Info 페이지
