@@ -10,7 +10,7 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 -- ==========================================
--- 0. 글로벌 리블록스(Rivlox) 안티치트 우회
+-- 0.anticheat bypass module
 -- ==========================================
 pcall(function()
     local mt = getrawmetatable(game)
