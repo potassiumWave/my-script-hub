@@ -1,5 +1,5 @@
 -- ==============================================================================
--- AQUA_HUB (COMBAT + MOVEMENT + VISUALS + TOGGLEABLE WEAPON SKIN SYSTEM)
+-- AQUA_HUB (COMBAT + MOVEMENT + VISUALS + TOGGLEABLE SKIN SYSTEM + GLOBAL RIVLOX BYPASS)
 -- ==============================================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -8,6 +8,42 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
+
+-- ==========================================
+-- 0. 글로벌 리블록스(Rivlox) 안티치트 우회
+-- ==========================================
+pcall(function()
+    local mt = getrawmetatable(game)
+    setreadonly(mt, false)
+    local oldIndex = mt.__index
+    local oldNamecall = mt.__namecall
+
+    if hookmetamethod then
+        local originalHook
+        originalHook = hookmetamethod(game, "__namecall", function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
+            
+            if method == "FireServer" and self and typeof(self.Name) == "string" then
+                local n = self.Name:lower()
+                if n:find("anticheat") or n:find("rivlox") or n:find("ban") or n:find("report") or n:find("detect") then
+                    return
+                end
+            end
+            return originalHook(self, ...)
+        end)
+    end
+
+    mt.__index = newcclosure(function(t, k)
+        if t == _G or t == shared then
+            if k == "Rivlox" or k == "AntiCheat" or k == "AC_Data" then
+                return nil
+            end
+        end
+        return oldIndex(t, k)
+    end)
+    setreadonly(mt, true)
+end)
 
 -- 이전 실행된 커스텀 UI 제거
 local oldUI = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("AQUA_UltimateUI") or game:GetService("CoreGui"):FindFirstChild("AQUA_UltimateUI")
@@ -26,14 +62,12 @@ local flying = false
 local flySpeed = 50
 local espEnabled = false
 local boxEspEnabled = false
-local skeletonEnabled = false
+local skeletonEnabled = false -- 기본값 false (켜야만 나옴)
 local FOVRadius = 300
 local Smoothness = 3
 
---  스킨 체인저 켜기/끄기
 local skinChangerEnabled = true
 
--- 사용자 제공 Weapon/Cosmetic 
 local playerScripts = LocalPlayer.PlayerScripts
 local controllers = playerScripts.Controllers
 
@@ -410,7 +444,7 @@ end)
 loadConfig()
 
 -- ==========================================
--- 2. 디싱크 같은 무언가랑 월뱅이랑 조절못하는 사일런트
+-- 2. 디싱크 및 사일런트 (Rivlox 우회 적용)
 -- ==========================================
 local __p6q7r8 = getgenv()
 if __p6q7r8.__s9t0u1 then
@@ -627,7 +661,6 @@ MenuBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- 드래그 기능
 local dragging, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -653,7 +686,7 @@ TitleBar.BackgroundTransparency = 1
 TitleBar.Position = UDim2.new(0, 15, 0, 0)
 TitleBar.Size = UDim2.new(1, -30, 0, 35)
 TitleBar.Font = Enum.Font.Code
-TitleBar.Text = "Aqua Hub - Combat, Movement & Toggleable Skin System"
+TitleBar.Text = "Aqua Hub - Rivlox Bypassed + Fixed Skeleton"
 TitleBar.TextColor3 = Color3.fromRGB(180, 185, 195)
 TitleBar.TextSize = 13
 TitleBar.TextXAlignment = Enum.TextXAlignment.Left
@@ -726,7 +759,7 @@ InfoTabBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 5. Main 페이지 컬럼 구성 (Combat / Movement / Visuals)
+-- 5. Main 페이지 컬럼 구성
 -- ==========================================
 local function createCategory(parent, title, posX)
     local f = Instance.new("ScrollingFrame", parent)
@@ -793,7 +826,6 @@ addToggle(combatCol, "Aimbot (우클릭 보정)", false, function(v)
     aimAssistEnabled = v
 end)
 
--- ★ Visuals 탭에 스킨 체인저 켜기/끄기 토글 추가
 addToggle(visualsCol, "Skin Changer (스킨체인저)", true, function(v)
     skinChangerEnabled = v
 end)
@@ -856,7 +888,7 @@ end)
 
 addToggle(visualsCol, "ESP (이름 표시)", false, function(v) espEnabled = v end)
 addToggle(visualsCol, "Box ESP (박스)", false, function(v) boxEspEnabled = v end)
-addToggle(visualsCol, "Skeleton ESP (뼈대)", false, function(v) skeletonEnabled = v end)
+addToggle(visualsCol, "Skeleton ESP (뼈대)", false, function(v) skeletonEnabled = v end) -- 토글 연동 완료
 
 -- ==========================================
 -- 6. Info 페이지
@@ -868,13 +900,12 @@ infoLabel.Font = Enum.Font.Code
 infoLabel.Text = [[
 [ AQUA HUB - INFORMATION ]
 
-• Status: Ultimate Combat + Toggleable Skin System
-• Version: v2.7.1 (With Skin Switch)
+• Status: Rivlox Anti-Cheat Bypassed Globally
+• Version: v2.8.1 (Fixed Skeleton & Clean Cleanup)
 • Developer: User & AI Collaborator
 
 Notice:
-- Visuals 탭에서 언제든 **Skin Changer**를 켜고 끌 수 있습니다.
-- 스킨 체인저를 끄면 게임 본래의 스킨 시스템으로 즉시 복구됩니다.
+- Skeleton ESP defaults to OFF and cleans up completely upon player death/removal.
 ]]
 infoLabel.TextColor3 = Color3.fromRGB(170, 175, 185)
 infoLabel.TextSize = 12
@@ -963,6 +994,7 @@ RunService.RenderStepped:Connect(function(dt)
         currentPlayers[p] = true
     end
 
+    -- 사용자가 나갔거나 죽은 플레이어의 이름/박스/스켈레톤 리소스 완벽 정리
     for player, txt in pairs(ActiveDrawings.Names) do
         if not currentPlayers[player] or not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
             txt.Visible = false
@@ -980,7 +1012,7 @@ RunService.RenderStepped:Connect(function(dt)
     end
 
     for player, skel in pairs(ActiveDrawings.Skeletons) do
-        if not currentPlayers[player] or not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
+        if not skeletonEnabled or not currentPlayers[player] or not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
             for _, line in pairs(skel) do
                 line.Visible = false
                 line:Remove()
@@ -996,6 +1028,7 @@ RunService.RenderStepped:Connect(function(dt)
             local pHead = pChar:FindFirstChild("Head")
             local pHum = pChar:FindFirstChild("Humanoid")
 
+            -- 이름 ESP
             if espEnabled and pRoot and pHum and pHum.Health > 0 then
                 if not ActiveDrawings.Names[player] then
                     local txt = Drawing.new("Text")
@@ -1023,6 +1056,7 @@ RunService.RenderStepped:Connect(function(dt)
                 end
             end
 
+            -- 박스 ESP
             if boxEspEnabled and pRoot and pHum and pHum.Health > 0 then
                 if not ActiveDrawings.Boxes[player] then
                     local box = Drawing.new("Square")
@@ -1047,6 +1081,104 @@ RunService.RenderStepped:Connect(function(dt)
                     ActiveDrawings.Boxes[player].Visible = false
                     ActiveDrawings.Boxes[player]:Remove()
                     ActiveDrawings.Boxes[player] = nil
+                end
+            end
+
+            -- 스켈레톤 ESP (토글이 켜져 있을 때만 작동하며 대상이 죽거나 사라지면 깨끗이 소멸)
+            if skeletonEnabled and pHum and pHum.Health > 0 then
+                local torso = pChar:FindFirstChild("Torso") or pChar:FindFirstChild("UpperTorso")
+                local leftArm = pChar:FindFirstChild("Left Arm") or pChar:FindFirstChild("LeftUpperArm")
+                local rightArm = pChar:FindFirstChild("Right Arm") or pChar:FindFirstChild("RightUpperArm")
+                local leftLeg = pChar:FindFirstChild("Left Leg") or pChar:FindFirstChild("LeftUpperLeg")
+                local rightLeg = pChar:FindFirstChild("Right Leg") or pChar:FindFirstChild("RightUpperLeg")
+
+                if pHead and torso then
+                    if not ActiveDrawings.Skeletons[player] then
+                        ActiveDrawings.Skeletons[player] = {
+                            HeadToTorso = Drawing.new("Line"),
+                            TorsoToLeftArm = Drawing.new("Line"),
+                            TorsoToRightArm = Drawing.new("Line"),
+                            TorsoToLeftLeg = Drawing.new("Line"),
+                            TorsoToRightLeg = Drawing.new("Line")
+                        }
+                        for _, line in pairs(ActiveDrawings.Skeletons[player]) do
+                            line.Visible = false
+                            line.Color = Color3.fromRGB(255, 255, 255)
+                            line.Thickness = 1
+                        end
+                    end
+
+                    local skel = ActiveDrawings.Skeletons[player]
+                    local headPos, headOn = Camera:WorldToViewportPoint(pHead.Position)
+                    local torsoPos, torsoOn = Camera:WorldToViewportPoint(torso.Position)
+
+                    if headOn and torsoOn then
+                        skel.HeadToTorso.From = Vector2.new(headPos.X, headPos.Y)
+                        skel.HeadToTorso.To = Vector2.new(torsoPos.X, torsoPos.Y)
+                        skel.HeadToTorso.Visible = true
+                    else
+                        skel.HeadToTorso.Visible = false
+                    end
+
+                    if leftArm and torso then
+                        local lArmPos, lArmOn = Camera:WorldToViewportPoint(leftArm.Position)
+                        if torsoOn and lArmOn then
+                            skel.TorsoToLeftArm.From = Vector2.new(torsoPos.X, torsoPos.Y)
+                            skel.TorsoToLeftArm.To = Vector2.new(lArmPos.X, lArmPos.Y)
+                            skel.TorsoToLeftArm.Visible = true
+                        else
+                            skel.TorsoToLeftArm.Visible = false
+                        end
+                    end
+
+                    if rightArm and torso then
+                        local rArmPos, rArmOn = Camera:WorldToViewportPoint(rightArm.Position)
+                        if torsoOn and rArmOn then
+                            skel.TorsoToRightArm.From = Vector2.new(torsoPos.X, torsoPos.Y)
+                            skel.TorsoToRightArm.To = Vector2.new(rArmPos.X, rArmPos.Y)
+                            skel.TorsoToRightArm.Visible = true
+                        else
+                            skel.TorsoToRightArm.Visible = false
+                        end
+                    end
+
+                    if leftLeg and torso then
+                        local lLegPos, lLegOn = Camera:WorldToViewportPoint(leftLeg.Position)
+                        if torsoOn and lLegOn then
+                            skel.TorsoToLeftLeg.From = Vector2.new(torsoPos.X, torsoPos.Y)
+                            skel.TorsoToLeftLeg.To = Vector2.new(lLegPos.X, lLegPos.Y)
+                            skel.TorsoToLeftLeg.Visible = true
+                        else
+                            skel.TorsoToLeftLeg.Visible = false
+                        end
+                    end
+
+                    if rightLeg and torso then
+                        local rLegPos, rLegOn = Camera:WorldToViewportPoint(rightLeg.Position)
+                        if torsoOn and rLegOn then
+                            skel.TorsoToRightLeg.From = Vector2.new(torsoPos.X, torsoPos.Y)
+                            skel.TorsoToRightLeg.To = Vector2.new(rLegPos.X, rLegPos.Y)
+                            skel.TorsoToRightLeg.Visible = true
+                        else
+                            skel.TorsoToRightLeg.Visible = false
+                        end
+                    end
+                else
+                    if ActiveDrawings.Skeletons[player] then
+                        for _, line in pairs(ActiveDrawings.Skeletons[player]) do
+                            line.Visible = false
+                            line:Remove()
+                        end
+                        ActiveDrawings.Skeletons[player] = nil
+                    end
+                end
+            else
+                if ActiveDrawings.Skeletons[player] then
+                    for _, line in pairs(ActiveDrawings.Skeletons[player]) do
+                        line.Visible = false
+                        line:Remove()
+                    end
+                    ActiveDrawings.Skeletons[player] = nil
                 end
             end
         end
