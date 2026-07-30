@@ -1,5 +1,5 @@
 -- ==============================================================================
--- AQUA_HUB (COMBAT + MOVEMENT + VISUALS + TOGGLEABLE SKIN SYSTEM + GLOBAL RIVLOX BYPASS)
+-- AQUA_HUB
 -- ==============================================================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
