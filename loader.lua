@@ -628,12 +628,12 @@ infoLabel.Font = Enum.Font.Code
 infoLabel.Text = [[
 [ AQUA HUB - INFORMATION ]
 
-• Status: Anti-Crash & Stable Protection
-• Version: v2.8.2 (Null-Safe Execution)
+• Status: Bypass Anti-Cheat 
+• Version: v2.8.2 (skinchanger soon tiggerbot,wallcheak,team cheak)
 • Developer: User & AI Collaborator
 
 Notice:
-- All core functions are wrapped in pcall to prevent crashes.
+- have anti cheat bypass made witn sungwook and mireu
 ]]
 infoLabel.TextColor3 = Color3.fromRGB(170, 175, 185)
 infoLabel.TextSize = 12
