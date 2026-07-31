@@ -581,8 +581,8 @@ addToggle(combatCol, "slientDesync", false, function(v)
     end
 end)
 
-addToggle(combatCol, "Aimbot (Right hold)", false, function(v)
-    aimAssistEnabled = v
+addToggle(combotCol, "Tiggerbot", false, function(v)
+    tiggerEnabled = v
 end)
 
 addToggle(visualsCol, "Skin Changer", true, function(v)
@@ -650,13 +650,31 @@ local ActiveDrawings = {
     Skeletons = {}
 }
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local FOVRadius = 50 
+local teamCheckEnabled = true
+
+local function isEnemy(player)
+    if player == LocalPlayer then return false end
+    if not teamCheckEnabled then return true end
+    if player.Team and LocalPlayer.Team then
+        return player.Team ~= LocalPlayer.Team
+    end
+    return true
+end
+
 local function GetClosestPlayerToCursor()
     local closestPlayer = nil
     local shortestDistance = FOVRadius
     local mousePos = UserInputService:GetMouseLocation()
 
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
+        if isEnemy(player) and player.Character then
             local humanoid = player.Character:FindFirstChild("Humanoid")
             local targetPartObj = player.Character:FindFirstChild("Head")
 
@@ -674,6 +692,16 @@ local function GetClosestPlayerToCursor()
     end
     return closestPlayer
 end
+
+RunService.RenderStepped:Connect(function()
+    local target = GetClosestPlayerToCursor()
+    if target then
+        pcall(function()
+            mouse1click()
+        end)
+        task.wait(0.05)
+    end
+end)
 
 RunService.RenderStepped:Connect(function(dt)
     pcall(function()
