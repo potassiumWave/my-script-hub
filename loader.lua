@@ -67,6 +67,7 @@ local flySpeed = 50
 local espEnabled = false
 local boxEspEnabled = false
 local skeletonEnabled = false
+local tiggerEnabled = false -- 수정: 변수명 통일
 local FOVRadius = 300
 local Smoothness = 3
 
@@ -581,7 +582,8 @@ addToggle(combatCol, "slientDesync", false, function(v)
     end
 end)
 
-addToggle(combotCol, "Tiggerbot", false, function(v)
+-- 수정: combotCol 오타 수정 및 tiggerEnabled 연동
+addToggle(combatCol, "Tiggerbot", false, function(v)
     tiggerEnabled = v
 end)
 
@@ -650,13 +652,7 @@ local ActiveDrawings = {
     Skeletons = {}
 }
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local FOVRadius = 50 
+local FOVRadiusSetting = 50 
 local teamCheckEnabled = true
 
 local function isEnemy(player)
@@ -670,7 +666,7 @@ end
 
 local function GetClosestPlayerToCursor()
     local closestPlayer = nil
-    local shortestDistance = FOVRadius
+    local shortestDistance = FOVRadiusSetting
     local mousePos = UserInputService:GetMouseLocation()
 
     for _, player in ipairs(Players:GetPlayers()) do
@@ -694,12 +690,16 @@ local function GetClosestPlayerToCursor()
 end
 
 RunService.RenderStepped:Connect(function()
-    local target = GetClosestPlayerToCursor()
-    if target then
-        pcall(function()
-            mouse1click()
-        end)
-        task.wait(0.05)
+    if tiggerEnabled then
+        local target = GetClosestPlayerToCursor()
+        if target then
+            pcall(function()
+                if mouse1click then
+                    mouse1click()
+                end
+            end)
+            task.wait(0.05)
+        end
     end
 end)
 
@@ -758,7 +758,8 @@ RunService.RenderStepped:Connect(function(dt)
             end
         end
 
-        for player, box in pairs(ActiveDrawing.Boxes or ActiveDrawings.Boxes) do
+        -- 수정: ActiveDrawing 단수형 오타를 올바른 복수형 ActiveDrawings로 수정
+        for player, box in pairs(ActiveDrawings.Boxes) do
             if not currentPlayers[player] or not player.Character or not player.Character:FindFirstChild("Humanoid") or player.Character.Humanoid.Health <= 0 then
                 pcall(function() box.Visible = false box:Remove() end)
                 ActiveDrawings.Boxes[player] = nil
@@ -917,7 +918,8 @@ RunService.RenderStepped:Connect(function(dt)
                                 if torsoOn and rLegOn then
                                     skel.TorsoToRightLeg.From = Vector2.new(torsoPos.X, torsoPos.Y)
                                     skel.TorsoToRightLeg.To = Vector2.new(rLegPos.X, rLegPos.Y)
-                                    skel.TorsoToRightLen.Visible = true
+                                    -- 수정: RightLen 오타를 올바른 RightLeg로 수정
+                                    skel.TorsoToRightLeg.Visible = true
                                 else
                                     skel.TorsoToRightLeg.Visible = false
                                 end
